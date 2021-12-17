@@ -1,0 +1,74 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: orderpgdata
+  name: orderpgdata
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+status: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: orderdb
+  name: orderdb
+spec:
+  ports:
+    - name: "orderdb"
+      port: 5432
+      targetPort: 5432
+  selector:
+    app: orderdb
+status:
+  loadBalancer: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: orderdb
+  name: orderdb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: orderdb
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: orderdb
+    spec:
+      containers:
+        - env:
+            - name: POSTGRES_DB
+              value: order
+            - name: POSTGRES_PASSWORD
+              value: orderpwd
+            - name: POSTGRES_USER
+              value: orderusr
+            - name: PGDATA
+              value:  /var/lib/postgresql/data/order
+          image: postgres:13
+          name: postgres
+          ports:
+            - containerPort: 5432
+          resources: {}
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: orderpgdata
+      restartPolicy: Always
+      volumes:
+        - name: orderpgdata
+          persistentVolumeClaim:
+            claimName: orderpgdata
+status: {}

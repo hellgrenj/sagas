@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: order
+  name: order
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: order
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: order
+    spec:
+      initContainers: # <-- init container that waits for migration job to be finished before starting main container 
+      - name: "wait-for-order-db-mig"
+        image: "groundnuty/k8s-wait-for:1.3"
+        imagePullPolicy: ""
+        args: 
+        - "job"
+        - "order-db-mig"
+      containers:
+      - image: order
+        name: order
+        resources: {}
+      restartPolicy: Always
+status: {}

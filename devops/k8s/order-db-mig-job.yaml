@@ -1,0 +1,13 @@
+apiVersion: batch/v1
+kind: Job # <-- job that runs db migrations (only one instance will run regardless of number of api instances...)
+metadata:
+  name: order-db-mig
+spec:
+  ttlSecondsAfterFinished: 10 # removes finished job after 10 seconds
+  template:
+    spec:
+      containers:
+      - name: order-db-mig
+        image: order-db-mig
+      restartPolicy: Never
+  backoffLimit: 10

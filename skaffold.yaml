@@ -1,0 +1,33 @@
+apiVersion: skaffold/v2beta11
+kind: Config
+build:
+  artifacts:
+    - image: order # order service
+      context: ./order
+      docker:
+        dockerfile: Dockerfile
+    - image: order-db-mig # order service db migrations
+      context: ./order/migrations
+      docker:
+        dockerfile: Dockerfile
+    - image: warehouse # warehouse service
+      context: ./warehouse
+      docker:
+        dockerfile: Dockerfile
+    - image: warehouse-db-mig # warehouse service db migrations
+      context: ./warehouse/migrations
+      docker:
+        dockerfile: Dockerfile
+    - image: payment # payment service
+      context: ./payment
+      docker:
+        dockerfile: Dockerfile
+    - image: notification # notification service
+      context: ./notification
+      docker:
+        dockerfile: Dockerfile
+deploy:
+  kubeContext: docker-desktop
+  kubectl:
+    manifests:
+      - ./devops/k8s/*.yaml

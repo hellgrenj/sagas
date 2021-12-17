@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: notification
+  name: notification
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notification
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: notification
+    spec:
+      containers:
+        - image: notification
+          name: notification
+          resources: {}
+      restartPolicy: Always
+status: {}

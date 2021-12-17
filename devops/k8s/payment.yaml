@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: payment
+  name: payment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: payment
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: payment
+    spec:
+      containers:
+      - image: payment
+        name: payment
+        resources: {}
+      restartPolicy: Always
+status: {}

@@ -1,0 +1,74 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: warehousepgdata
+  name: warehousepgdata
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+status: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: warehousedb
+  name: warehousedb
+spec:
+  ports:
+    - name: "warehousedb"
+      port: 5432 # <-- because order db is also postgres and it already exposes default 5432 on host localhost
+      targetPort: 5432
+  selector:
+    app: warehousedb
+status:
+  loadBalancer: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: warehousedb
+  name: warehousedb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: warehousedb
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: warehousedb
+    spec:
+      containers:
+        - env:
+            - name: POSTGRES_DB
+              value: warehouse
+            - name: POSTGRES_PASSWORD
+              value: warehousepwd
+            - name: POSTGRES_USER
+              value: warehouseusr
+            - name: PGDATA
+              value:  /var/lib/postgresql/data/warehouse
+          image: postgres:13
+          name: postgres
+          ports:
+            - containerPort: 5432
+          resources: {}
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: warehousepgdata
+      restartPolicy: Always
+      volumes:
+        - name: warehousepgdata
+          persistentVolumeClaim:
+            claimName: warehousepgdata
+status: {}
