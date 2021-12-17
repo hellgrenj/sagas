@@ -12,8 +12,8 @@ Go
 ``skaffold run``  
 
 and when everything is up and running start an order flow 
-with: ```deno run -A sales-app-sim.ts``` while monitoring with ```deno run -A monitoring-sim.ts``` 
-(also check the logs for notification service..)  
+with: ```deno run -A sales-app-sim.ts``` while monitoring with ```deno run -A monitoring-sim.ts```   
+(also check notification service logs)  
 
 
 
@@ -49,5 +49,5 @@ service   service    service    service
 
 **Rollback example with compensating transactions**
 
-todo: describe...∏
+todo: describe...
 
