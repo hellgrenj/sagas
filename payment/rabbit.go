@@ -30,10 +30,10 @@ func NewRabbitWorker(paymentHandler PaymentHandler, infraHandler InfraHandler, l
 
 type Message map[string]interface{}
 type PaymentEvent struct {
-	CorrelationId string                 `json:"corelationId"`
-	Name          string                 `json:"name"`
-	MessageId     string                 `json:"messageid"`
-	Reservation   map[string]interface{} `json:"reservation"`
+	CorrelationId string  `json:"correlationId"`
+	Name          string  `json:"name"`
+	MessageId     string  `json:"messageId"`
+	OrderId       float64 `json:"orderId"`
 }
 
 func deserialize(b []byte) (Message, error) {
@@ -128,7 +128,7 @@ func (r *rabbit) StartListen() {
 			if alreadyProcessed {
 				r.logger.info.Printf("Message %v already processed", msg["messageId"])
 			} else {
-				r.processMessage(msg)
+				go r.processMessage(msg)
 			}
 		}
 	}()
@@ -151,7 +151,7 @@ func (r *rabbit) processMessage(msg Message) {
 				CorrelationId: msg["correlationId"].(string),
 				Name:          "payment succeeded",
 				MessageId:     uuid.New().String(),
-				Reservation:   reservation,
+				OrderId:       reservation["orderId"].(float64),
 			}
 			r.publishMessage(paymentSucceededEvent)
 		}

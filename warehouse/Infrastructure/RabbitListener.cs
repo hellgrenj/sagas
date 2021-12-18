@@ -52,6 +52,10 @@ public class RabbitListener : BackgroundService
                   exchange,
                   routingKey: "order.created");
 
+        channel.QueueBind(queue: queueName,
+                exchange,
+                routingKey: "order.payment.completed");
+
         _logger.LogInformation("waiting for messages");
         var consumer = new EventingBasicConsumer(channel);
         consumer.Received += async (model, ea) =>
@@ -97,9 +101,12 @@ public class RabbitListener : BackgroundService
                 var orderCreatedEvent = JsonSerializer.Deserialize<OrderCreatedEvent>(json, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
                 await mediator.Send(new ReserveItemsCommand(orderCreatedEvent));
                 break;
+            case "order.payment.completed":
+                var paymentCompletedEvent = JsonSerializer.Deserialize<PaymentCompleted>(json, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+                await mediator.Send(new ShipOrderCommand(paymentCompletedEvent));
+                break;
             default:
                 break;
-
         }
     }
     private async Task<bool> TryMarkMessageAsProcessed(string messageId)
