@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -43,7 +44,7 @@ func (i *infra) TryMarkMessageAsProcessed(messageId string) (bool, error) {
 			return alreadyProcessed, err
 		}
 	} else {
-		i.logger.Info().Printf("Inserted %s into processedmessages collection!\n", messageId)
+		i.logger.Info(fmt.Sprintf("Inserted %s into processedmessages collection!\n", messageId))
 		return alreadyProcessed, nil
 	}
 }

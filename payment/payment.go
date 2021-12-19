@@ -1,6 +1,9 @@
 package main
 
-import "context"
+import (
+	"context"
+	"fmt"
+)
 
 type payment struct {
 	db     *DBAccess
@@ -17,13 +20,13 @@ func NewPayment(db *DBAccess, logger Logger) *payment {
 	return &payment{db: db, logger: logger}
 }
 func (p *payment) ChargeCustomer(orderPayment OrderPayment) bool {
-	p.logger.Info().Println("charging customer")
+	p.logger.Info("charging customer")
 	_, err := p.db.conn.Database("payment").Collection("payments").InsertOne(context.TODO(), orderPayment)
 	if err != nil {
-		p.logger.Error().Printf("failed to create payment %s", err)
+		p.logger.Error(fmt.Sprintf("failed to create payment %s", err))
 		return false
 	} else {
-		p.logger.Info().Println("payment created")
+		p.logger.Info("payment created")
 		return true
 	}
 }

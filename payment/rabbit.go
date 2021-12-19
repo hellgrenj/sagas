@@ -3,6 +3,8 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
+	"log"
 	"os"
 	"time"
 
@@ -46,22 +48,22 @@ func deserialize(b []byte) (Message, error) {
 func (r *rabbit) TryConnectToRabbit(connectionAttempt int) *amqp.Connection {
 	conn, err := amqp.Dial("amqp://guest:guest@rabbit:5672/")
 	if err != nil {
-		r.logger.Error().Printf("Unable to connect to rabbit: %v\n", err)
+		r.logger.Error(fmt.Sprintf("Unable to connect to rabbit: %v\n", err))
 		if connectionAttempt < 5 {
 			connectionAttempt++
-			r.logger.Info().Printf("Trying again in 4 seconds attempt %v of 5\n", connectionAttempt)
+			r.logger.Info(fmt.Sprintf("Trying again in 4 seconds attempt %v of 5\n", connectionAttempt))
 			time.Sleep(4 * time.Second)
 			return r.TryConnectToRabbit(connectionAttempt)
 		}
 		os.Exit(1)
 	}
-	r.logger.Info().Println("Successfully connected to rabbit")
+	r.logger.Info("Successfully connected to rabbit")
 	return conn
 }
 
 func (r *rabbit) failOnError(err error, msg string) {
 	if err != nil {
-		r.logger.Error().Fatalf("%s: %s", msg, err)
+		log.Fatalf("%s: %s", msg, err)
 	}
 }
 func (r *rabbit) StartListen() {
@@ -117,27 +119,27 @@ func (r *rabbit) StartListen() {
 
 	go func() {
 		for d := range msgs {
-			r.logger.Info().Printf(" [x] %s", d.Body)
+			r.logger.Info(fmt.Sprintf(" [x] %s", d.Body))
 			var msg, err = deserialize(d.Body)
 			if err != nil {
-				r.logger.Error().Printf("Error deserializing message: %v", err)
+				r.logger.Error(fmt.Sprintf("Error deserializing message: %v", err))
 				continue
 			}
 			alreadyProcessed, err := r.InfraHandler.TryMarkMessageAsProcessed(msg["messageId"].(string))
 			r.failOnError(err, "Error marking message as processed")
 			if alreadyProcessed {
-				r.logger.Info().Printf("Message %v already processed", msg["messageId"])
+				r.logger.Info(fmt.Sprintf("Message %v already processed", msg["messageId"]))
 			} else {
 				go r.processMessage(msg)
 			}
 		}
 	}()
 
-	r.logger.Info().Printf(" [*] Listening on exchange %s. To exit press CTRL+C", exchange)
+	r.logger.Info(fmt.Sprintf(" [*] Listening on exchange %s. To exit press CTRL+C", exchange))
 	<-forever
 }
 func (r *rabbit) processMessage(msg Message) {
-	r.logger.Info().Println("Processing message")
+	r.logger.Info("Processing message")
 	if msg["name"].(string) == "items reserved" {
 		reservation := msg["reservation"].(map[string]interface{})
 		orderPayment := OrderPayment{
@@ -156,7 +158,7 @@ func (r *rabbit) processMessage(msg Message) {
 			r.publishMessage(paymentSucceededEvent)
 		}
 	} else {
-		r.logger.Info().Println("Unknown message type")
+		r.logger.Info("Unknown message type")
 	}
 }
 func (r *rabbit) publishMessage(paymentEvent PaymentEvent) {
@@ -165,7 +167,7 @@ func (r *rabbit) publishMessage(paymentEvent PaymentEvent) {
 	defer ch.Close()
 	body, err := json.Marshal(paymentEvent)
 	if err != nil {
-		r.logger.Error().Println(err)
+		r.logger.Error(err.Error())
 		return
 	}
 	err = ch.Publish(
@@ -177,5 +179,5 @@ func (r *rabbit) publishMessage(paymentEvent PaymentEvent) {
 			Body: []byte(body),
 		})
 	r.failOnError(err, "Failed to publish a message")
-	r.logger.Info().Printf(" [x] Sent %s", body)
+	r.logger.Info(fmt.Sprintf(" [x] Sent %s", body))
 }

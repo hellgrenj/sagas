@@ -6,8 +6,8 @@ import (
 )
 
 type Logger interface {
-	Info() *log.Logger
-	Error() *log.Logger
+	Info(msg string)
+	Error(msg string)
 }
 type Log struct {
 	info  *log.Logger
@@ -19,9 +19,9 @@ func NewLogger() *Log {
 	e := log.New(os.Stderr, "ERROR: ", 3)
 	return &Log{info: i, error: e}
 }
-func (l *Log) Info() *log.Logger {
-	return l.info
+func (l *Log) Info(msg string) {
+	l.info.Println(msg)
 }
-func (l *Log) Error() *log.Logger {
-	return l.error
+func (l *Log) Error(msg string) {
+	l.error.Println(msg)
 }
