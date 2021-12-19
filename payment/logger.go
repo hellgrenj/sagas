@@ -5,13 +5,17 @@ import (
 	"os"
 )
 
-type Logger struct {
+type Logger interface {
+	Info() *log.Logger
+	Error() *log.Logger
+}
+type Log struct {
 	info  *log.Logger
 	error *log.Logger
 }
 
-func NewLogger() *Logger {
+func NewLogger() *Log {
 	i := log.New(os.Stdout, "INFO: ", 3)
 	e := log.New(os.Stderr, "ERROR: ", 3)
-	return &Logger{info: i, error: e}
+	return &Log{info: i, error: e}
 }

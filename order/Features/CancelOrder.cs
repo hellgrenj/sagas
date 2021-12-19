@@ -45,7 +45,8 @@ public class CancelOrderCommandHandler : IRequestHandler<CancelOrderCommand, Uni
             await _connection.ExecuteScalarAsync(sql,
             new { state = order.State, id = order.Id });
             _logger.LogInformation($"Cancelled Order with id {order.Id}");
-            await _mediator.Publish(new OrderCancelledEvent { CorrelationId = cmd.itemsNotInStockEvent.CorrelationId, Order = order });
+            await _mediator.Publish(new OrderCancelledEvent { CorrelationId = cmd.itemsNotInStockEvent.CorrelationId, 
+            Reason = "Items not in stock", Order = order });
         }
         else
         {

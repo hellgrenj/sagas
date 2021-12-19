@@ -69,7 +69,7 @@ func main() {
 				log.Printf("Error deserializing message: %v", err)
 				continue
 			}
-			processMessage(msg)
+			go processMessage(msg)
 		}
 	}()
 
@@ -117,17 +117,18 @@ func processMessage(msg Message) {
 		customerMessage = fmt.Sprintf("Your order (#%v) has been created", order["id"].(float64))
 	case "order cancelled":
 		order := msg["order"].(map[string]interface{})
-		customerMessage = fmt.Sprintf("Your order (#%v) has been cancelled", order["id"].(float64))
-	case "items reserved":
-		customerMessage = "Your items have been reserved"
-	case "items not in stock":
-		customerMessage = "We are sorry, we are out of stock"
-	case "paymen completed":
-		customerMessage = "Your payment has been completed"
+		reason := msg["reason"].(string)
+		customerMessage = fmt.Sprintf("Your order (#%v) has been cancelled. Reason: %s", order["id"].(float64), reason)
+	// case "items reserved": not communicated to customer
+	// case "items not in stock": not communicated to customer
+	case "payment succeeded":
+		orderId := msg["orderId"].(float64)
+		customerMessage = fmt.Sprintf("Your payment has been completed for order #%v", orderId)
 	case "order shipped":
-		customerMessage = "Your order has been shipped"
+		orderId := msg["orderId"].(float64)
+		customerMessage = fmt.Sprintf("Your order (#%v) has been shipped", orderId)
+	// case "order completed": not communicated to customer
 	default:
-		log.Printf("Unknown message: %v", msg)
 	}
 	if customerMessage != "" {
 		log.Printf("Sent the following to the customer:\n%s", customerMessage)

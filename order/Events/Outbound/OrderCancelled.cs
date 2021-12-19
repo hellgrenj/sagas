@@ -11,7 +11,10 @@ public class OrderCancelledEvent : Event, INotification
         this.Name = "order cancelled";
         this.MessageId = Guid.NewGuid().ToString();
     }
+
+    public string Reason { get; set; }
     public Order Order { get; set; }
+
 }
 public class OrderCancelledEventHandler : INotificationHandler<OrderCancelledEvent>
 {
