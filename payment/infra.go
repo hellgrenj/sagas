@@ -10,10 +10,10 @@ import (
 
 type infra struct {
 	db     *DBAccess
-	logger *Logger
+	logger Logger
 }
 
-func NewInfraHandler(db *DBAccess, logger *Logger) *infra {
+func NewInfraHandler(db *DBAccess, logger Logger) *infra {
 	// init setup
 	i := &infra{db: db, logger: logger}
 	coll := i.db.conn.Database("payment").Collection("processedmessages")
@@ -43,7 +43,7 @@ func (i *infra) TryMarkMessageAsProcessed(messageId string) (bool, error) {
 			return alreadyProcessed, err
 		}
 	} else {
-		i.logger.info.Printf("Inserted %s into processedmessages collection!\n", messageId)
+		i.logger.Info().Printf("Inserted %s into processedmessages collection!\n", messageId)
 		return alreadyProcessed, nil
 	}
 }

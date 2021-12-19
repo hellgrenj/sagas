@@ -19,3 +19,9 @@ func NewLogger() *Log {
 	e := log.New(os.Stderr, "ERROR: ", 3)
 	return &Log{info: i, error: e}
 }
+func (l *Log) Info() *log.Logger {
+	return l.info
+}
+func (l *Log) Error() *log.Logger {
+	return l.error
+}

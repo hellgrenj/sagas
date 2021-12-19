@@ -4,7 +4,7 @@ import "context"
 
 type payment struct {
 	db     *DBAccess
-	logger *Logger
+	logger Logger
 }
 
 type OrderPayment struct {
@@ -13,17 +13,17 @@ type OrderPayment struct {
 	Quantity float64 `bson:"quantity"`
 }
 
-func NewPayment(db *DBAccess, logger *Logger) *payment {
+func NewPayment(db *DBAccess, logger Logger) *payment {
 	return &payment{db: db, logger: logger}
 }
 func (p *payment) ChargeCustomer(orderPayment OrderPayment) bool {
-	p.logger.info.Println("charging customer")
+	p.logger.Info().Println("charging customer")
 	_, err := p.db.conn.Database("payment").Collection("payments").InsertOne(context.TODO(), orderPayment)
 	if err != nil {
-		p.logger.error.Printf("failed to create payment %s", err)
+		p.logger.Error().Printf("failed to create payment %s", err)
 		return false
 	} else {
-		p.logger.info.Println("payment created")
+		p.logger.Info().Println("payment created")
 		return true
 	}
 }

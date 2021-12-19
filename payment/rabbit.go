@@ -20,11 +20,11 @@ type InfraHandler interface {
 type rabbit struct {
 	PaymentHandler PaymentHandler
 	InfraHandler   InfraHandler
-	logger         *Logger
+	logger         Logger
 	conn           *amqp.Connection
 }
 
-func NewRabbitWorker(paymentHandler PaymentHandler, infraHandler InfraHandler, logger *Logger) *rabbit {
+func NewRabbitWorker(paymentHandler PaymentHandler, infraHandler InfraHandler, logger Logger) *rabbit {
 	return &rabbit{PaymentHandler: paymentHandler, InfraHandler: infraHandler, logger: logger, conn: nil}
 }
 
@@ -46,22 +46,22 @@ func deserialize(b []byte) (Message, error) {
 func (r *rabbit) TryConnectToRabbit(connectionAttempt int) *amqp.Connection {
 	conn, err := amqp.Dial("amqp://guest:guest@rabbit:5672/")
 	if err != nil {
-		r.logger.error.Printf("Unable to connect to rabbit: %v\n", err)
+		r.logger.Error().Printf("Unable to connect to rabbit: %v\n", err)
 		if connectionAttempt < 5 {
 			connectionAttempt++
-			r.logger.info.Printf("Trying again in 4 seconds attempt %v of 5\n", connectionAttempt)
+			r.logger.Info().Printf("Trying again in 4 seconds attempt %v of 5\n", connectionAttempt)
 			time.Sleep(4 * time.Second)
 			return r.TryConnectToRabbit(connectionAttempt)
 		}
 		os.Exit(1)
 	}
-	r.logger.info.Println("Successfully connected to rabbit")
+	r.logger.Info().Println("Successfully connected to rabbit")
 	return conn
 }
 
 func (r *rabbit) failOnError(err error, msg string) {
 	if err != nil {
-		r.logger.error.Fatalf("%s: %s", msg, err)
+		r.logger.Error().Fatalf("%s: %s", msg, err)
 	}
 }
 func (r *rabbit) StartListen() {
@@ -117,27 +117,27 @@ func (r *rabbit) StartListen() {
 
 	go func() {
 		for d := range msgs {
-			r.logger.info.Printf(" [x] %s", d.Body)
+			r.logger.Info().Printf(" [x] %s", d.Body)
 			var msg, err = deserialize(d.Body)
 			if err != nil {
-				r.logger.error.Printf("Error deserializing message: %v", err)
+				r.logger.Error().Printf("Error deserializing message: %v", err)
 				continue
 			}
 			alreadyProcessed, err := r.InfraHandler.TryMarkMessageAsProcessed(msg["messageId"].(string))
 			r.failOnError(err, "Error marking message as processed")
 			if alreadyProcessed {
-				r.logger.info.Printf("Message %v already processed", msg["messageId"])
+				r.logger.Info().Printf("Message %v already processed", msg["messageId"])
 			} else {
 				go r.processMessage(msg)
 			}
 		}
 	}()
 
-	r.logger.info.Printf(" [*] Listening on exchange %s. To exit press CTRL+C", exchange)
+	r.logger.Info().Printf(" [*] Listening on exchange %s. To exit press CTRL+C", exchange)
 	<-forever
 }
 func (r *rabbit) processMessage(msg Message) {
-	r.logger.info.Println("Processing message")
+	r.logger.Info().Println("Processing message")
 	if msg["name"].(string) == "items reserved" {
 		reservation := msg["reservation"].(map[string]interface{})
 		orderPayment := OrderPayment{
@@ -156,7 +156,7 @@ func (r *rabbit) processMessage(msg Message) {
 			r.publishMessage(paymentSucceededEvent)
 		}
 	} else {
-		r.logger.info.Println("Unknown message type")
+		r.logger.Info().Println("Unknown message type")
 	}
 }
 func (r *rabbit) publishMessage(paymentEvent PaymentEvent) {
@@ -165,7 +165,7 @@ func (r *rabbit) publishMessage(paymentEvent PaymentEvent) {
 	defer ch.Close()
 	body, err := json.Marshal(paymentEvent)
 	if err != nil {
-		r.logger.error.Println(err)
+		r.logger.Error().Println(err)
 		return
 	}
 	err = ch.Publish(
@@ -177,5 +177,5 @@ func (r *rabbit) publishMessage(paymentEvent PaymentEvent) {
 			Body: []byte(body),
 		})
 	r.failOnError(err, "Failed to publish a message")
-	r.logger.info.Printf(" [x] Sent %s", body)
+	r.logger.Info().Printf(" [x] Sent %s", body)
 }
