@@ -54,6 +54,9 @@ public class RabbitListener : BackgroundService
         channel.QueueBind(queue: queueName,
                 exchange,
                 routingKey: "order.items.notinstock");
+        channel.QueueBind(queue: queueName,
+                exchange,
+                routingKey: "order.shipped");
 
         _logger.LogInformation("waiting for messages");
         var consumer = new EventingBasicConsumer(channel);
@@ -103,6 +106,10 @@ public class RabbitListener : BackgroundService
             case "order.items.notinstock":
                 var itemsNotInStockEvent = JsonSerializer.Deserialize<ItemsNotInStockEvent>(json, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
                 await mediator.Send(new CancelOrderCommand(itemsNotInStockEvent));
+                break;
+            case "order.shipped":
+                var orderShippedevent = JsonSerializer.Deserialize<OrderShippedevent>(json, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+                await mediator.Send(new CompleteOrderCommand(orderShippedevent));
                 break;
             default:
                 break;

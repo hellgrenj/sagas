@@ -8,7 +8,6 @@ const exchange = "order.topics";
 await channel.declareExchange({ exchange: exchange, type: "topic" });
 
 const order = {
-  id: 1,
   item: "iPhone 13",
   price: 2000,
   quantity: 3,

@@ -10,8 +10,7 @@ public class Order
 }
 public class OrderStates
 {
-    public const string PaymentPending = "PaymentPending";
+    public const string Pending = "Pending";
     public const string Cancelled = "Cancelled";
-    public const string PaymentConfirmed = "PaymentConfirmed";
-    public const string Deliverd = "Delivered";
+    public const string Completed = "Completed";
 }

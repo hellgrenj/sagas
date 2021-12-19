@@ -42,7 +42,7 @@ public class PlaceOrderHandler : IRequestHandler<CreateOrderCommand, Unit>
         if (validationResult.IsValid)
         {
             var order = cmd.orderPlacedEvent.Order;
-            order.State = OrderStates.PaymentPending;
+            order.State = OrderStates.Pending;
             var sql = "INSERT INTO ordertable (correlationid, item, quantity, price, state) Values (@correlationid, @item, @quantity, @price,  @state) RETURNING Id;";
             order.Id = (int)await _connection.ExecuteScalarAsync(sql,
             new { correlationid = cmd.orderPlacedEvent.CorrelationId, item = order.Item, quantity = order.Quantity, price = order.Price, state = order.State });

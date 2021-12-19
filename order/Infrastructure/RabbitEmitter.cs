@@ -40,6 +40,8 @@ public class RabbitEmitter : IRabbitEmitter
             new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }))),
             OrderCancelledEvent _ => ("order.cancelled", Encoding.UTF8.GetBytes(JsonSerializer.Serialize((OrderCancelledEvent)e,
             new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }))),
+            OrderCompletedEvent _ => ("order.completed", Encoding.UTF8.GetBytes(JsonSerializer.Serialize((OrderCompletedEvent)e,
+            new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }))),
             _ => throw new Exception("unknown event")
         };
 
