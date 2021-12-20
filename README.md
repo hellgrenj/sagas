@@ -4,7 +4,7 @@ A simplified implementation (demo) of an order fulfilment flow as a choreographe
 
 ## Prerequisites
 Docker Desktop (with kubernetes enabled) and skaffold   
-.Net 6    
+.NET 6    
 Deno   
 Go   
 
@@ -13,7 +13,7 @@ Go
 
 and when everything is up and running start an order flow 
 with: ```deno run -A sales-app-sim.ts``` while monitoring with ```deno run -A monitoring-sim.ts```   
-(also check notification service logs)  
+(also check the logs for the notification service ``kubectl logs <podname> -f``)  
 
 
 
@@ -35,6 +35,13 @@ with: ```deno run -A sales-app-sim.ts``` while monitoring with ```deno run -A mo
 service   service    service    service 
 
 ```
+The Order service is built with .NET 6 and Postgres (db migrations with Roundhouse)  
+The Warehouse service is built with .NET 6 and Postgres (db migrations with Roundhouse)  
+The Payment service is built with Go and MongoDB  
+The Notification service is built with Go  
+sales-app-sim and monitoring-sim are Deno scripts. 
+
+The databases are not exposed on localhost so you need to ``kubectl port-forward <podname> 5462:5462`` (for Postgres) or ``kubectl port-forward <podname> 27017:27017`` (for MongoDB) to access them locally (with DBeaver and mongosh or what ever tool you prefer).
 
 **Order Fulfillment flow (as a choreographed saga)**
 
