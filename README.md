@@ -56,5 +56,6 @@ The databases are not exposed on localhost so you need to ``kubectl port-forward
 
 **Rollback example with compensating transactions**
 
-todo: describe...
+For every order simulated there is a 50% risk of the items not being in stock. When this happens the warehouse service will emit an item.notinstock event. The order service will listen of this event and cancel the order and emit an order.cancelled event. Notification service listens for all events and informs the customers about important steps.
+
 
