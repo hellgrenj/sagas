@@ -44,7 +44,7 @@ The Payment service is built with Go and MongoDB
 The Notification service is built with Go  
 sales-app-sim and monitoring-sim are Deno scripts. 
 
-The databases are not exposed on localhost so you need to ``kubectl port-forward <podname> 5462:5462`` (for Postgres) or ``kubectl port-forward <podname> 27017:27017`` (for MongoDB) to access them locally (with DBeaver and mongosh or what ever tool you prefer).
+The databases are not exposed on localhost so you need to ``kubectl port-forward <podname> 5432:5432`` (for Postgres) or ``kubectl port-forward <podname> 27017:27017`` (for MongoDB) to access them locally (with DBeaver and mongosh or what ever tool you prefer).
 
 **Order Fulfillment flow (as a choreographed saga)**
 
