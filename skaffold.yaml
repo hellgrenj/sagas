@@ -7,7 +7,7 @@ build:
       docker:
         dockerfile: Dockerfile
     - image: order-db-mig # order service db migrations
-      context: ./order/migrations
+      context: ./order/Migrations
       docker:
         dockerfile: Dockerfile
     - image: warehouse # warehouse service
@@ -15,7 +15,7 @@ build:
       docker:
         dockerfile: Dockerfile
     - image: warehouse-db-mig # warehouse service db migrations
-      context: ./warehouse/migrations
+      context: ./warehouse/Migrations
       docker:
         dockerfile: Dockerfile
     - image: payment # payment service
