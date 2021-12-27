@@ -1,10 +1,10 @@
 package main
 
 func main() {
-	logger := NewLogger()
-	db := NewDBAccess(logger)
-	paymentHandler := NewPayment(db, logger)
-	infraHandler := NewInfraHandler(db, logger)
-	worker := NewRabbitWorker(paymentHandler, infraHandler, logger)
+
+	db := NewDBAccess(NewLogger("db"))
+	paymentHandler := NewPayment(db, NewLogger("payment"))
+	infraHandler := NewInfraHandler(db, NewLogger("infra"))
+	worker := NewRabbitWorker(paymentHandler, infraHandler, NewLogger("rabbit"))
 	worker.StartListen()
 }

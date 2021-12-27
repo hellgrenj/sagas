@@ -6,17 +6,34 @@ import (
 	"os"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type DBAccess struct {
+type DBAccess interface {
+	ChargeCustomer(orderPayment OrderPayment) error
+	TryMarkMessageAsProcessed(messageId string) (bool, error)
+}
+type dba struct {
 	conn *mongo.Client
 }
 
-func NewDBAccess(logger Logger) *DBAccess {
+func NewDBAccess(logger Logger) *dba {
 	conn := TryConnectToMongo(1, logger)
-	return &DBAccess{conn: conn}
+	db := &dba{conn: conn}
+	coll := db.conn.Database("payment").Collection("processedmessages")
+	_, err := coll.Indexes().CreateOne(
+		context.Background(),
+		mongo.IndexModel{
+			Keys:    bson.D{{Key: "messageid", Value: 1}},
+			Options: options.Index().SetUnique(true),
+		},
+	)
+	if err != nil {
+		panic(err)
+	}
+	return db
 }
 func TryConnectToMongo(connectionAttempt int, logger Logger) *mongo.Client {
 	const uri = "mongodb://mongoadmin:mongopwd@paymentdb:27017/?maxPoolSize=20&w=majority"
@@ -34,4 +51,24 @@ func TryConnectToMongo(connectionAttempt int, logger Logger) *mongo.Client {
 	}
 	logger.Info("Successfully connected to mongo")
 	return client
+}
+func (db *dba) ChargeCustomer(orderPayment OrderPayment) error {
+	_, err := db.conn.Database("payment").Collection("payments").InsertOne(context.TODO(), orderPayment)
+	return err
+}
+func (db *dba) TryMarkMessageAsProcessed(messageId string) (bool, error) {
+	alreadyProcessed := false
+	_, err := db.conn.Database("payment").Collection("processedmessages").InsertOne(context.Background(),
+		bson.D{
+			{Key: "messageid", Value: messageId},
+		})
+	if err != nil {
+		if mongo.IsDuplicateKeyError(err) {
+			alreadyProcessed = true
+			return alreadyProcessed, nil
+		} else {
+			return alreadyProcessed, err
+		}
+	}
+	return alreadyProcessed, err
 }
