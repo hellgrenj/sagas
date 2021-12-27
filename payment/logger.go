@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 )
 
 type Logger interface {
@@ -22,7 +23,7 @@ func NewLogger(caller string) *logger {
 	return &logger{info: i, error: e, caller: caller}
 }
 func (l *logger) Info(msg string) {
-	msg = fmt.Sprintf("%s %s", l.caller, msg)
+	msg = fmt.Sprintf("%s: %s", strings.ToUpper(l.caller), msg)
 	l.info.Println(msg)
 }
 func (l *logger) Error(msg string) {

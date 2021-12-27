@@ -20,7 +20,7 @@ func NewPayment(db DBAccess, logger Logger) *payment {
 }
 func (p *payment) ChargeCustomer(orderPayment OrderPayment) bool {
 	p.logger.Info("charging customer")
-	err := p.db.ChargeCustomer(orderPayment)
+	err := p.db.InsertPayment(orderPayment)
 	if err != nil {
 		p.logger.Error(fmt.Sprintf("failed to create payment %s", err))
 		return false

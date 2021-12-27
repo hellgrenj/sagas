@@ -12,7 +12,7 @@ import (
 )
 
 type DBAccess interface {
-	ChargeCustomer(orderPayment OrderPayment) error
+	InsertPayment(orderPayment OrderPayment) error
 	TryMarkMessageAsProcessed(messageId string) (bool, error)
 }
 type dba struct {
@@ -52,7 +52,7 @@ func TryConnectToMongo(connectionAttempt int, logger Logger) *mongo.Client {
 	logger.Info("Successfully connected to mongo")
 	return client
 }
-func (db *dba) ChargeCustomer(orderPayment OrderPayment) error {
+func (db *dba) InsertPayment(orderPayment OrderPayment) error {
 	_, err := db.conn.Database("payment").Collection("payments").InsertOne(context.TODO(), orderPayment)
 	return err
 }
