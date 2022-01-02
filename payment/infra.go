@@ -1,5 +1,9 @@
 package main
 
+type InfraHandler interface {
+	TryMarkMessageAsProcessed(messageId string) (bool, error)
+}
+
 type infra struct {
 	db     DBAccess
 	logger Logger

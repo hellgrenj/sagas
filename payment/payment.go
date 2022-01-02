@@ -4,6 +4,9 @@ import (
 	"fmt"
 )
 
+type PaymentHandler interface {
+	ChargeCustomer(orderPayment OrderPayment) bool
+}
 type payment struct {
 	db     DBAccess
 	logger Logger
@@ -15,7 +18,7 @@ type OrderPayment struct {
 	Quantity float64 `bson:"quantity"`
 }
 
-func NewPayment(db DBAccess, logger Logger) *payment {
+func NewPaymentHandler(db DBAccess, logger Logger) *payment {
 	return &payment{db: db, logger: logger}
 }
 func (p *payment) ChargeCustomer(orderPayment OrderPayment) bool {

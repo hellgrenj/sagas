@@ -12,13 +12,6 @@ import (
 	"github.com/streadway/amqp"
 )
 
-type PaymentHandler interface {
-	ChargeCustomer(orderPayment OrderPayment) bool
-}
-type InfraHandler interface {
-	TryMarkMessageAsProcessed(messageId string) (bool, error)
-}
-
 type rabbit struct {
 	PaymentHandler PaymentHandler
 	InfraHandler   InfraHandler
@@ -31,12 +24,6 @@ func NewRabbitWorker(paymentHandler PaymentHandler, infraHandler InfraHandler, l
 }
 
 type Message map[string]interface{}
-type PaymentEvent struct {
-	CorrelationId string  `json:"correlationId"`
-	Name          string  `json:"name"`
-	MessageId     string  `json:"messageId"`
-	OrderId       float64 `json:"orderId"`
-}
 
 func deserialize(b []byte) (Message, error) {
 	var msg Message
@@ -125,7 +112,12 @@ func (r *rabbit) StartListen() {
 				r.logger.Error(fmt.Sprintf("Error deserializing message: %v", err))
 				continue
 			}
-			alreadyProcessed, err := r.InfraHandler.TryMarkMessageAsProcessed(msg["messageId"].(string))
+			messageId, ok := msg["messageId"].(string)
+			if !ok {
+				r.logger.Error("messageId is missing or not a string")
+				continue
+			}
+			alreadyProcessed, err := r.InfraHandler.TryMarkMessageAsProcessed(messageId)
 			r.failOnError(err, "Error marking message as processed")
 			if alreadyProcessed {
 				r.logger.Info(fmt.Sprintf("Message %v already processed", msg["messageId"]))
@@ -138,22 +130,37 @@ func (r *rabbit) StartListen() {
 	r.logger.Info(fmt.Sprintf(" [*] Listening on exchange %s. To exit press CTRL+C", exchange))
 	<-forever
 }
+
 func (r *rabbit) processMessage(msg Message) {
 	r.logger.Info("Processing message")
-	if msg["name"].(string) == "items reserved" {
-		reservation := msg["reservation"].(map[string]interface{})
+	messageName, ok := msg["name"].(string)
+	if !ok {
+		r.logger.Error("message name is missing or not a string")
+		return
+	}
+	correlationId, correlationIdOk := msg["correlationId"].(string)
+	if !correlationIdOk {
+		r.logger.Error("correlationId is missing or not a string")
+		return
+	}
+	if messageName == "items reserved" {
+		itemsReservedEvent, err := MapToItemsReservedEvent(msg)
+		if err != nil {
+			r.logger.Error(fmt.Sprintf("Error mapping message to reservation: %v", err))
+			return
+		}
 		orderPayment := OrderPayment{
-			Amount:   reservation["price"].(float64),
-			Item:     reservation["item"].(string),
-			Quantity: reservation["quantity"].(float64),
+			Amount:   itemsReservedEvent.Price,
+			Item:     itemsReservedEvent.Item,
+			Quantity: itemsReservedEvent.Quantity,
 		}
 		paymentSucceded := r.PaymentHandler.ChargeCustomer(orderPayment)
 		if paymentSucceded {
 			paymentSucceededEvent := PaymentEvent{
-				CorrelationId: msg["correlationId"].(string),
+				CorrelationId: correlationId,
 				Name:          "payment succeeded",
 				MessageId:     uuid.New().String(),
-				OrderId:       reservation["orderId"].(float64),
+				OrderId:       itemsReservedEvent.OrderId,
 			}
 			r.publishMessage(paymentSucceededEvent)
 		}
@@ -161,6 +168,7 @@ func (r *rabbit) processMessage(msg Message) {
 		r.logger.Info("Unknown message type")
 	}
 }
+
 func (r *rabbit) publishMessage(paymentEvent PaymentEvent) {
 	ch, err := r.conn.Channel()
 	r.failOnError(err, "Failed to open a channel")
