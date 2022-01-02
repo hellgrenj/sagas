@@ -1,4 +1,4 @@
-package main
+package db
 
 import (
 	"context"
@@ -6,21 +6,22 @@ import (
 	"os"
 	"time"
 
+	"github.com/hellgrenj/sagas/payment/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type DBAccess interface {
-	InsertPayment(orderPayment OrderPayment) error
-	TryMarkMessageAsProcessed(messageId string) (bool, error)
+type Logger interface {
+	Info(msg string)
+	Error(msg string)
 }
 type dba struct {
 	conn *mongo.Client
 }
 
 func NewDBAccess(logger Logger) *dba {
-	conn := TryConnectToMongo(1, logger)
+	conn := tryConnectToMongo(1, logger)
 	db := &dba{conn: conn}
 	coll := db.conn.Database("payment").Collection("processedmessages")
 	_, err := coll.Indexes().CreateOne(
@@ -35,7 +36,7 @@ func NewDBAccess(logger Logger) *dba {
 	}
 	return db
 }
-func TryConnectToMongo(connectionAttempt int, logger Logger) *mongo.Client {
+func tryConnectToMongo(connectionAttempt int, logger Logger) *mongo.Client {
 	const uri = "mongodb://mongoadmin:mongopwd@paymentdb:27017/?maxPoolSize=20&w=majority"
 	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(uri))
 
@@ -45,14 +46,14 @@ func TryConnectToMongo(connectionAttempt int, logger Logger) *mongo.Client {
 			connectionAttempt++
 			logger.Info(fmt.Sprintf("Trying again in 4 seconds attempt %v of 5\n", connectionAttempt))
 			time.Sleep(4 * time.Second)
-			return TryConnectToMongo(connectionAttempt, logger)
+			return tryConnectToMongo(connectionAttempt, logger)
 		}
 		os.Exit(1)
 	}
 	logger.Info("Successfully connected to mongo")
 	return client
 }
-func (db *dba) InsertPayment(orderPayment OrderPayment) error {
+func (db *dba) InsertPayment(orderPayment models.OrderPayment) error {
 	_, err := db.conn.Database("payment").Collection("payments").InsertOne(context.TODO(), orderPayment)
 	return err
 }

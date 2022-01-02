@@ -1,4 +1,4 @@
-package main
+package infra
 
 import (
 	"bytes"
@@ -9,17 +9,22 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/hellgrenj/sagas/payment/events/inbound"
+	"github.com/hellgrenj/sagas/payment/events/outbound"
+	"github.com/hellgrenj/sagas/payment/logic"
+	"github.com/hellgrenj/sagas/payment/models"
+
 	"github.com/streadway/amqp"
 )
 
 type rabbit struct {
-	PaymentHandler PaymentHandler
+	PaymentHandler logic.PaymentHandler
 	InfraHandler   InfraHandler
 	logger         Logger
 	conn           *amqp.Connection
 }
 
-func NewRabbitWorker(paymentHandler PaymentHandler, infraHandler InfraHandler, logger Logger) *rabbit {
+func NewRabbitWorker(paymentHandler logic.PaymentHandler, infraHandler InfraHandler, logger Logger) *rabbit {
 	return &rabbit{PaymentHandler: paymentHandler, InfraHandler: infraHandler, logger: logger, conn: nil}
 }
 
@@ -144,19 +149,19 @@ func (r *rabbit) processMessage(msg Message) {
 		return
 	}
 	if messageName == "items reserved" {
-		itemsReservedEvent, err := MapToItemsReservedEvent(msg)
+		itemsReservedEvent, err := inbound.MapToItemsReservedEvent(msg)
 		if err != nil {
 			r.logger.Error(fmt.Sprintf("Error mapping message to reservation: %v", err))
 			return
 		}
-		orderPayment := OrderPayment{
+		orderPayment := models.OrderPayment{
 			Amount:   itemsReservedEvent.Price,
 			Item:     itemsReservedEvent.Item,
 			Quantity: itemsReservedEvent.Quantity,
 		}
 		paymentSucceded := r.PaymentHandler.ChargeCustomer(orderPayment)
 		if paymentSucceded {
-			paymentSucceededEvent := PaymentEvent{
+			paymentSucceededEvent := outbound.PaymentEvent{
 				CorrelationId: correlationId,
 				Name:          "payment succeeded",
 				MessageId:     uuid.New().String(),
@@ -169,7 +174,7 @@ func (r *rabbit) processMessage(msg Message) {
 	}
 }
 
-func (r *rabbit) publishMessage(paymentEvent PaymentEvent) {
+func (r *rabbit) publishMessage(paymentEvent outbound.PaymentEvent) {
 	ch, err := r.conn.Channel()
 	r.failOnError(err, "Failed to open a channel")
 	defer ch.Close()

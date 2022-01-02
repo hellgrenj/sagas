@@ -1,16 +1,9 @@
-package main
+package inbound
 
-import "errors"
+import (
+	"errors"
+)
 
-// outbound events
-type PaymentEvent struct {
-	CorrelationId string  `json:"correlationId"`
-	Name          string  `json:"name"`
-	MessageId     string  `json:"messageId"`
-	OrderId       float64 `json:"orderId"`
-}
-
-// inbound events
 type ItemsReservedEvent struct {
 	Price    float64
 	Item     string
@@ -18,7 +11,7 @@ type ItemsReservedEvent struct {
 	OrderId  float64
 }
 
-func MapToItemsReservedEvent(msg Message) (ItemsReservedEvent, error) {
+func MapToItemsReservedEvent(msg map[string]interface{}) (ItemsReservedEvent, error) {
 	var r ItemsReservedEvent
 	reservation, ok := msg["reservation"].(map[string]interface{})
 	if !ok {

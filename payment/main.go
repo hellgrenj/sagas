@@ -1,10 +1,15 @@
 package main
 
-func main() {
+import (
+	"github.com/hellgrenj/sagas/payment/db"
+	"github.com/hellgrenj/sagas/payment/infra"
+	"github.com/hellgrenj/sagas/payment/logic"
+)
 
-	db := NewDBAccess(NewLogger("db"))
-	paymentHandler := NewPaymentHandler(db, NewLogger("payment"))
-	infraHandler := NewInfraHandler(db, NewLogger("infra"))
-	worker := NewRabbitWorker(paymentHandler, infraHandler, NewLogger("rabbit"))
+func main() {
+	db := db.NewDBAccess(infra.NewLogger("db"))
+	paymentHandler := logic.NewPaymentHandler(db, infra.NewLogger("payment"))
+	infraHandler := infra.NewInfraHandler(db, infra.NewLogger("infra"))
+	worker := infra.NewRabbitWorker(paymentHandler, infraHandler, infra.NewLogger("rabbit"))
 	worker.StartListen()
 }
