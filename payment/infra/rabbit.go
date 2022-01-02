@@ -37,7 +37,7 @@ func deserialize(b []byte) (Message, error) {
 	err := decoder.Decode(&msg)
 	return msg, err
 }
-func (r *rabbit) TryConnectToRabbit(connectionAttempt int) *amqp.Connection {
+func (r *rabbit) tryConnectToRabbit(connectionAttempt int) *amqp.Connection {
 	conn, err := amqp.Dial("amqp://guest:guest@rabbit:5672/")
 	if err != nil {
 		r.logger.Error(fmt.Sprintf("Unable to connect to rabbit: %v\n", err))
@@ -45,7 +45,7 @@ func (r *rabbit) TryConnectToRabbit(connectionAttempt int) *amqp.Connection {
 			connectionAttempt++
 			r.logger.Info(fmt.Sprintf("Trying again in 4 seconds attempt %v of 5\n", connectionAttempt))
 			time.Sleep(4 * time.Second)
-			return r.TryConnectToRabbit(connectionAttempt)
+			return r.tryConnectToRabbit(connectionAttempt)
 		}
 		os.Exit(1)
 	}
@@ -59,7 +59,7 @@ func (r *rabbit) failOnError(err error, msg string) {
 	}
 }
 func (r *rabbit) StartListen() {
-	r.conn = r.TryConnectToRabbit(1)
+	r.conn = r.tryConnectToRabbit(1)
 	defer r.conn.Close()
 
 	ch, err := r.conn.Channel()
