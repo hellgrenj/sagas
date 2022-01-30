@@ -1,0 +1,89 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: rabbit
+  name: rabbit
+spec:
+  ports:
+    - name: "mgmt-ui"
+      port: 15672
+      targetPort: 15672
+    - name: "rabbit"
+      port: 5672
+      targetPort: 5672
+  type: LoadBalancer
+  selector:
+    app: rabbit
+status:
+  loadBalancer: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: rabbit
+  name: rabbit
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rabbit
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: rabbit
+    spec:
+      containers:
+      - image: rabbitmq:3.9-management
+        name: rabbit
+        ports:
+          - containerPort: 5672
+          - containerPort: 15672
+        resources: {}
+        volumeMounts:
+          - mountPath: /var/lib/rabbitmq/
+            name: rabbitdata
+          - mountPath: /var/logs/rabbitmq/
+            name: rabbitlogs
+      restartPolicy: Always
+      volumes:
+        - name: rabbitdata
+          persistentVolumeClaim:
+            claimName: rabbitdata
+        - name: rabbitlogs
+          persistentVolumeClaim:
+            claimName: rabbitlogs
+status: {}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: rabbitdata
+  name: rabbitdata
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+status: {}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: rabbitlogs
+  name: rabbitlogs
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+status: {}
