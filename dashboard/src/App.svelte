@@ -1,17 +1,24 @@
 <script>
-	export let message;
-	const ws = new WebSocket('ws://localhost:8080/echo');
-	ws.onopen = function() {
-		ws.send('Hello Server!');
-	};
+	export let msgs = [];
+	const ws = new WebSocket('ws://localhost:8080/ws');
+	// ws.onopen = function() {
+	// 	ws.send('Hello Server!');
+	// };
 	ws.onmessage = function(e) {
 		console.log(e.data);
-		message = e.data
+		msgs.push(e.data);
+		msgs = msgs;
+		console.log('length of messages', msgs.length);
 	};
 </script>
 
 <main>
-	<h1>{message}</h1>
+	<h3>monitoring</h3>
+	<div>
+	{#each msgs as msg}
+		{msg}<br/>
+	{/each}
+	</div>
 </main>
 
 <style>
@@ -22,12 +29,11 @@
 		margin: 0 auto;
 	}
 
-	h1 {
-		color: #ff3e00;
-		text-transform: uppercase;
-		font-size: 4em;
-		font-weight: 100;
-	}
+	/* .console {
+		background-color: #000;
+		color:#fff;
+		max-width: 300px;
+	} */
 
 	@media (min-width: 640px) {
 		main {
