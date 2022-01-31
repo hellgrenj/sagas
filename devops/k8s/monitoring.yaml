@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: monitoring
+  name: monitoring
+spec:
+  ports:
+    - name: "monitoring"
+      port: 8080
+      targetPort: 8080
+  type: LoadBalancer
+  selector:
+    app: monitoring
+status:
+  loadBalancer: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: monitoring
+  name: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: monitoring
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: monitoring
+    spec:
+      containers:
+        - image: monitoring
+          name: monitoring
+          ports:
+          - containerPort: 8080
+          resources: {}
+      restartPolicy: Always
+status: {}

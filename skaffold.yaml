@@ -26,6 +26,10 @@ build:
       context: ./notification
       docker:
         dockerfile: Dockerfile
+    - image: monitoring # monitoring service
+      context: ./monitoring
+      docker:
+        dockerfile: Dockerfile
 deploy:
   kubeContext: docker-desktop
   kubectl:
