@@ -8,9 +8,7 @@
 		return color;
 	}
 	export let msgs = [];
-	window.setInterval(() => {
-		msgs = [];
-	}, 60000);
+
 	const ws = new WebSocket("ws://localhost:8080/ws");
 	let prevEv = null;
 	let currentColor = getRandomColor();
@@ -18,7 +16,7 @@
 		const ev = JSON.parse(e.data);
 		console.log(ev);
 		if (prevEv == null) {
-			msgs.push({
+			addNewMsgs({
 				Header: true,
 				CorrelationId: ev.CorrelationId,
 				Color: currentColor,
@@ -26,7 +24,7 @@
 		}
 		if (prevEv && prevEv.CorrelationId !== ev.CorrelationId) {
 			currentColor = getRandomColor();
-			msgs.push({
+			addNewMsgs({
 				Header: true,
 				CorrelationId: ev.CorrelationId,
 				Color: currentColor,
@@ -34,14 +32,31 @@
 		}
 		ev.Color = currentColor;
 		prevEv = ev;
-		msgs.push(ev);
+		addNewMsgs(ev);
 
 		msgs = msgs;
 	};
+	const uniqueCorrelationIds = [];
+	function addNewMsgs(ev) {
+		if (uniqueCorrelationIds.length == 6) {
+			const corrIdToRemove = uniqueCorrelationIds.shift();
+			let newMsgs = msgs.filter(
+				(m) => m.CorrelationId != corrIdToRemove
+			);
+			newMsgs.push(ev);
+			msgs = newMsgs;
+		} else {
+			msgs.push(ev);
+			msgs = msgs;
+		}
+		if (!uniqueCorrelationIds.includes(ev.CorrelationId)) {
+			uniqueCorrelationIds.push(ev.CorrelationId);
+		}
+	}
 </script>
 
 <main>
-	<h3>terminal (last 60 seconds)</h3>
+	<h3>terminal (latest 5)</h3>
 	<div class="console">
 		{#each msgs as msg}
 			<div style="color: {msg.Color}">
@@ -70,7 +85,7 @@
 		margin: 0 auto;
 		padding: 1em;
 		font-family: "Courier New", monospace;
-		height: 600px;
+		height: 800px;
 		overflow-y: auto;
 	}
 
