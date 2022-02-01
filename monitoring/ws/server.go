@@ -5,9 +5,10 @@ import (
 	"net/http"
 
 	"github.com/gorilla/websocket"
+	"github.com/hellgrenj/sagas/monitoring/models"
 )
 
-func StartListen(eventChan chan string) {
+func StartListen(eventChan chan models.Event) {
 	go publishEventToWsConnections(eventChan)
 	http.HandleFunc("/ws", connect)
 
@@ -28,28 +29,14 @@ func connect(w http.ResponseWriter, r *http.Request) {
 		log.Print("upgrade:", err)
 		return
 	}
-	// // defer c.Close()
-	// for {
-	// 	mt, message, err := c.ReadMessage()
-	// 	if err != nil {
-	// 		log.Println("read:", err)
-	// 		break
-	// 	}
-	// 	log.Printf("recv: %s", message)
-	// 	err = c.WriteMessage(mt, message)
-	// 	if err != nil {
-	// 		log.Println("write:", err)
-	// 		break
-	// 	}
-	// }
 }
-func publishEventToWsConnections(eventChan chan string) {
+func publishEventToWsConnections(eventChan chan models.Event) {
 	for {
 		event := <-eventChan
-		log.Printf("Publishing event: %s", event)
+		log.Printf("Publishing event: %s with correlationId %v and messageId %v", event.Name, event.CorrelationId, event.MessageId)
 		for index, c := range connections {
 			log.Printf("Sending event to connection %d", index)
-			err := c.WriteMessage(websocket.TextMessage, []byte(event))
+			err := c.WriteJSON(event)
 			if err != nil {
 				log.Printf("Error writing message to websocket: %v", err)
 				// remove connection from list

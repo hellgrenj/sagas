@@ -6,9 +6,8 @@
 	// };
 	ws.onmessage = function(e) {
 		console.log(e.data);
-		msgs.push(e.data);
+		msgs.push(JSON.parse(e.data));
 		msgs = msgs;
-		console.log('length of messages', msgs.length);
 	};
 </script>
 
@@ -16,7 +15,7 @@
 	<h3>monitoring</h3>
 	<div>
 	{#each msgs as msg}
-		{msg}<br/>
+		{msg.Name}<br/>
 	{/each}
 	</div>
 </main>

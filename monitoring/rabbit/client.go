@@ -7,10 +7,11 @@ import (
 	"os"
 	"time"
 
+	"github.com/hellgrenj/sagas/monitoring/models"
 	"github.com/streadway/amqp"
 )
 
-func StartListen(eventChan chan string) {
+func StartListen(eventChan chan models.Event) {
 	conn := tryConnectToRabbit(1)
 	defer conn.Close()
 
@@ -107,13 +108,24 @@ func failOnError(err error, msg string) {
 	}
 }
 
-func processMessage(msg message, eventChan chan string) {
+func processMessage(msg message, eventChan chan models.Event) {
 
 	msgName, ok := msg["name"].(string)
 	if !ok {
 		log.Printf("msg.name is not a string")
 		return
 	}
+	correlationId, ok := msg["correlationId"].(string)
+	if !ok {
+		log.Printf("msg.correlationId is not a string") // TODO or missing?
+		return
+	}
+	messageId, ok := msg["messageId"].(string)
+	if !ok {
+		log.Printf("msg.messageId is not a string") // TODO or missing?
+		return
+	}
 	log.Printf("Received message: %s", msgName)
-	eventChan <- msgName
+	e := models.Event{CorrelationId: correlationId, MessageId: messageId, Name: msgName}
+	eventChan <- e
 }
