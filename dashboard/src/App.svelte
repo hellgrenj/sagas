@@ -9,16 +9,28 @@
 	}
 	export let msgs = [];
 	window.setInterval(() => {
-		msgs = []
-	}, 10000);
+		msgs = [];
+	}, 60000);
 	const ws = new WebSocket("ws://localhost:8080/ws");
 	let prevEv = null;
 	let currentColor = getRandomColor();
 	ws.onmessage = function (e) {
 		const ev = JSON.parse(e.data);
+		console.log(ev);
+		if (prevEv == null) {
+			msgs.push({
+				Header: true,
+				CorrelationId: ev.CorrelationId,
+				Color: currentColor,
+			});
+		}
 		if (prevEv && prevEv.CorrelationId !== ev.CorrelationId) {
-			msgs.push({ Name: "<br/>" });
 			currentColor = getRandomColor();
+			msgs.push({
+				Header: true,
+				CorrelationId: ev.CorrelationId,
+				Color: currentColor,
+			});
 		}
 		ev.Color = currentColor;
 		prevEv = ev;
@@ -29,10 +41,17 @@
 </script>
 
 <main>
-	<h3>terminal (last 10 seconds)</h3>
+	<h3>terminal (last 60 seconds)</h3>
 	<div class="console">
 		{#each msgs as msg}
-			<div style="color: {msg.Color}">{@html msg.Name}</div>
+			<div style="color: {msg.Color}">
+				{#if msg.Header}
+					<br />
+					{msg.CorrelationId}
+				{:else}
+					{@html msg.Name}
+				{/if}
+			</div>
 		{/each}
 	</div>
 </main>
@@ -47,10 +66,10 @@
 
 	.console {
 		background-color: #000;
-		max-width: 300px;
+		max-width: 600px;
 		margin: 0 auto;
 		padding: 1em;
-		font-family: 'Courier New', monospace;
+		font-family: "Courier New", monospace;
 		height: 600px;
 		overflow-y: auto;
 	}
