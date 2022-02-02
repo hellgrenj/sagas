@@ -17,7 +17,7 @@ func StartListen(eventChan chan models.Event) {
 
 var upgrader = websocket.Upgrader{CheckOrigin: func(r *http.Request) bool {
 	origin := r.Header.Get("Origin")
-	return origin == "http://localhost:1337"
+	return origin == "http://localhost:1337" || origin == "http://localhost"
 }}
 
 const (

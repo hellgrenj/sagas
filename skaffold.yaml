@@ -30,6 +30,10 @@ build:
       context: ./monitoring
       docker:
         dockerfile: Dockerfile
+    - image: dashboard # dashboard service
+      context: ./dashboard
+      docker:
+        dockerfile: Dockerfile
 deploy:
   kubeContext: docker-desktop
   kubectl:

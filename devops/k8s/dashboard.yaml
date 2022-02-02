@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: dashboard
+  name: dashboard
+spec:
+  ports:
+    - name: "dashboard"
+      port: 80
+      targetPort: 80
+  type: LoadBalancer
+  selector:
+    app: dashboard
+status:
+  loadBalancer: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: dashboard
+  name: dashboard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dashboard
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: dashboard
+    spec:
+      containers:
+        - image: dashboard
+          name: dashboard
+          ports:
+          - containerPort: 80
+          resources: {}
+      restartPolicy: Always
+status: {}
