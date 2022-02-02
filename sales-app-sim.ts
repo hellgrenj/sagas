@@ -1,6 +1,9 @@
 import { connect } from "https://deno.land/x/amqp@v0.17.0/mod.ts";
 
-console.log("Simulating a sales app placing an order".toUpperCase());
+
+console.log("Simulating a sales app placing an order every 10 second".toUpperCase());
+
+
 const connection = await connect();
 const channel = await connection.openChannel();
 
@@ -20,6 +23,7 @@ const msg = {
 };
 
 console.log("placing order", order);
+
 
 await channel.publish(
   { exchange: "order.topics", routingKey: "order.placed" },

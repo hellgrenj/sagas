@@ -86,7 +86,7 @@
 </script>
 
 <main>
-    <canvas id="myChart" width="400" height="800" />
+    <canvas id="myChart" width="400" height="300" />
 </main>
 
 <style>
@@ -96,6 +96,6 @@
         margin: 0 auto;
     }
     #myChart {
-        max-height: 800px;
+         max-height: 500px; 
     }
 </style>
