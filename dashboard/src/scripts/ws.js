@@ -8,7 +8,7 @@ export const connect = () => {
 
     ws.onmessage = function (e) {
         const ev = JSON.parse(e.data);
-        console.log(ev);
+       
         if (prevEv == null) {
             addNewMsgs({
                 Header: true,
