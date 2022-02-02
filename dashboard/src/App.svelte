@@ -1,5 +1,8 @@
 <script>
 	import Terminal from "./components/Terminal.svelte";
+	import { onMount } from "svelte";
+	import { connect } from "./scripts/ws";
+	onMount(connect);
 </script>
 
 <h1>DASHBOARD</h1>

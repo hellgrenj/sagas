@@ -10,9 +10,8 @@ import (
 )
 
 func StartListen(eventChan chan models.Event) {
-	go publishEventToWsConnections(eventChan)
+	go publishEventsToWsConnections(eventChan)
 	http.HandleFunc("/ws", connect)
-
 	log.Fatal(http.ListenAndServe(":8080", nil)) // keeps process alive
 }
 
@@ -64,7 +63,7 @@ func connect(w http.ResponseWriter, r *http.Request) {
 	}()
 
 }
-func publishEventToWsConnections(eventChan chan models.Event) {
+func publishEventsToWsConnections(eventChan chan models.Event) {
 	for {
 		event := <-eventChan
 		log.Printf("Publishing event: %s with correlationId %v and messageId %v", event.Name, event.CorrelationId, event.MessageId)
