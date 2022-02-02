@@ -36,7 +36,7 @@
         margin: 0 auto;
         padding: 1em;
         font-family: "Courier New", monospace;
-        height: 800px;
+        height: 700px;
         overflow-y: auto;
     }
 

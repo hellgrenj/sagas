@@ -86,7 +86,7 @@
 </script>
 
 <main>
-    <canvas id="myChart" width="400" height="300" />
+    <canvas id="myChart" width="400" height="180" />
 </main>
 
 <style>

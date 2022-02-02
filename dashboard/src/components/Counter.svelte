@@ -36,7 +36,8 @@
         font-family: "Courier New", monospace;
         font-weight: 500;
         font-size: 60px;
-        height: 100px;
-        width: 100px;
+        height: 50px;
+        width: 50px;
+        
     }
 </style>

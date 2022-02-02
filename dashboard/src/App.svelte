@@ -8,7 +8,7 @@
 </script>
 
 <h1>DASHBOARD</h1>
-<div class="top">latest 100 sagas (order flows)</div>
+<div class="top">latest 5 sagas (order flows)</div>
 <div class="wrapper">
 	<div class="counter1">
 		<Counter message={"order completed"} />
