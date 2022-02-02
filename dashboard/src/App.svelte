@@ -2,12 +2,12 @@
 	import Terminal from "./components/Terminal.svelte";
 	import Chart from "./components/Chart.svelte";
 	import { onMount } from "svelte";
-	import { connect } from "./scripts/ws";
-	onMount(connect);
+	import { connectAndConsume } from "./scripts/ws";
+	onMount(connectAndConsume);
 </script>
 
 <h1>DASHBOARD</h1>
-<div class="top">latest 5</div>
+<div class="top">latest 100 orders</div>
 <div class="wrapper">
 	<div class="left">
 		<Chart />

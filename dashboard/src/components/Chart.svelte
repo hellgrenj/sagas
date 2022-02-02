@@ -9,33 +9,33 @@
         BarElement,
     } from "chart.js";
 
-    let labels = [];
-    let data = [];
-
     let unsubscribe = null;
     let myChart = null;
     onMount(() => {
         Chart.register(LinearScale, BarController, CategoryScale, BarElement);
         unsubscribe = messages.subscribe((value) => {
-            labels = [];
-            data = [];
+            const labels = [];
+            const data = [];
             for (const v of value) {
-                addLabelIfNotExist(v.Name);
-                incrementPerLabel(v.Name);
+                addLabelIfNotExist(labels, v.Name);
+            }
+            labels.sort();
+            for (const v of value) {
+                incrementPerLabel(labels, data, v.Name);
             }
             if (myChart) {
                 myChart.destroy();
             }
-            RenderChart();
+            RenderChart(labels, data);
         });
     });
     onDestroy(unsubscribe);
-    function addLabelIfNotExist(label) {
+    function addLabelIfNotExist(labels, label) {
         if (!labels.includes(label)) {
             labels.push(label);
         }
     }
-    function incrementPerLabel(label) {
+    function incrementPerLabel(labels, data, label) {
         let index = labels.indexOf(label);
         if (index > -1) {
             if (data[index]) {
@@ -45,7 +45,7 @@
             }
         }
     }
-    function RenderChart() {
+    function RenderChart(labels, data) {
         const ctx = document.getElementById("myChart").getContext("2d");
         myChart = new Chart(ctx, {
             type: "bar",
@@ -86,14 +86,16 @@
 </script>
 
 <main>
-    <canvas id="myChart" width="400" height="400" />
+    <canvas id="myChart" width="400" height="800" />
 </main>
 
 <style>
     main {
         text-align: center;
         padding: 1em;
-
         margin: 0 auto;
+    }
+    #myChart {
+        max-height: 800px;
     }
 </style>

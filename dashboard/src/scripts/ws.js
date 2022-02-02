@@ -1,7 +1,7 @@
 import { messages } from "../stores/messages";
 
 let msgs = [];
-export const connect = () => {
+export const connectAndConsume = () => {
     const ws = new WebSocket("ws://localhost:8080/ws");
     let prevEv = null;
     let currentColor = getRandomColor();
@@ -42,7 +42,7 @@ function getRandomColor() {
 }
 const uniqueCorrelationIds = [];
 function addNewMsgs(ev) {
-    if (uniqueCorrelationIds.length == 6) {
+    if (uniqueCorrelationIds.length == 101) {
         const corrIdToRemove = uniqueCorrelationIds.shift();
         let newMsgs = msgs.filter((m) => m.CorrelationId != corrIdToRemove);
         newMsgs.push(ev);
