@@ -1,8 +1,6 @@
 import { messages } from "../stores/messages";
 
 let msgs = [];
-let ws = null;
-
 export const connectAndConsume = () => {
     const ws = new WebSocket("ws://localhost:8080/ws");
     let prevEv = null;
@@ -42,9 +40,9 @@ export const connectAndConsume = () => {
 };
 
 function getRandomColor() {
-    var letters = "0123456789ABCDEF";
-    var color = "#";
-    for (var i = 0; i < 6; i++) {
+    const letters = "0123456789ABCDEF";
+    let color = "#";
+    for (let i = 0; i < 6; i++) {
         color += letters[Math.floor(Math.random() * 16)];
     }
     return color;
@@ -53,7 +51,7 @@ const uniqueCorrelationIds = [];
 function addNewMsgs(ev) {
     if (uniqueCorrelationIds.length == 6) {
         const corrIdToRemove = uniqueCorrelationIds.shift();
-        let newMsgs = msgs.filter((m) => m.CorrelationId != corrIdToRemove);
+        const newMsgs = msgs.filter((m) => m.CorrelationId != corrIdToRemove);
         newMsgs.push(ev);
         msgs = newMsgs;
         messages.set(msgs)
