@@ -112,17 +112,17 @@ func processMessage(msg message, eventChan chan models.Event) {
 
 	msgName, ok := msg["name"].(string)
 	if !ok {
-		log.Printf("msg.name is not a string")
+		log.Printf("msg.name is missing or not a string")
 		return
 	}
 	correlationId, ok := msg["correlationId"].(string)
 	if !ok {
-		log.Printf("msg.correlationId is not a string") // TODO or missing?
+		log.Printf("msg.correlationId is missing or not a string")
 		return
 	}
 	messageId, ok := msg["messageId"].(string)
 	if !ok {
-		log.Printf("msg.messageId is not a string") // TODO or missing?
+		log.Printf("msg.messageId is missing not a string")
 		return
 	}
 	log.Printf("Received message: %s", msgName)

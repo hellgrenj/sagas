@@ -12,7 +12,7 @@ import (
 func StartListen(eventChan chan models.Event) {
 	go publishEventsToWsConnections(eventChan)
 	http.HandleFunc("/ws", connect)
-	log.Fatal(http.ListenAndServe(":8080", nil)) // keeps process alive
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
 var upgrader = websocket.Upgrader{CheckOrigin: func(r *http.Request) bool {

@@ -20,15 +20,15 @@ func MapToItemsReservedEvent(msg map[string]interface{}) (ItemsReservedEvent, er
 	}
 	price, priceOk := reservation["price"].(float64)
 	if !priceOk {
-		return r, errors.New("reservation price is not a float")
+		return r, errors.New("reservation price is missing or not a float")
 	}
 	item, itemOk := reservation["item"].(string)
 	if !itemOk {
-		return r, errors.New("reservation item is not a string")
+		return r, errors.New("reservation item s missing or not a string")
 	}
 	quantity, quantityOk := reservation["quantity"].(float64)
 	if !quantityOk {
-		return r, errors.New("reservation quantity is not a float")
+		return r, errors.New("reservation quantity is missing or not a float")
 	}
 	orderId, orderIdOk := reservation["orderId"].(float64)
 	if !orderIdOk {
