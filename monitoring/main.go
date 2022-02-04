@@ -8,7 +8,6 @@ import (
 
 func main() {
 	// TODO this is a spike - go over error handling and logging and TODO's etc...
-	// TODO fix connection management.. getting duplicates now.. ping-pong setup?
 	eventChan := make(chan models.Event)
 	go rabbit.StartListen(eventChan)
 	ws.StartListen(eventChan)
