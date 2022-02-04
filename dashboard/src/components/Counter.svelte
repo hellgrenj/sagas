@@ -3,11 +3,13 @@
     import { onDestroy } from "svelte";
     export let message;
     let count = 0;
+    let color = "#fff"
     const unsubscribe = messages.subscribe((value) => {
         count = 0;
         for (let v of value) {
             if (v.Name === message) {
                 count = count + 1;
+                color = v.Color;
             }
         }
     });
@@ -16,7 +18,7 @@
 
 <main>
     <h3># {message}</h3>
-    <div class="wrapper">
+    <div class="wrapper" style="color:{color}">
         {count}
     </div>
 </main>
