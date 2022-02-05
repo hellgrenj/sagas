@@ -39,7 +39,7 @@ every 10 seconds with: ```deno run -A sales-app-sim.ts```
 service   service    service    service 
 
 ```
-The service are built in .NET 6 and Go and the sales-app-sim is a simple Deno script. 
+The service are built in .NET 6 with Postgres and Go with MongoDB and the sales-app-sim is a simple Deno script. 
 
 **There is a built-in delay for every step in the order flow. This is only for demo purposes (makes it easier to follow the flow in the dashboard)**
 
@@ -49,11 +49,11 @@ The databases are not exposed on localhost so you need to ``kubectl port-forward
 
 **Order Fulfillment flow (as a choreographed saga)**
 
-1. sales-app-sim emits ``order.placed`` event
-2. orderService creates an order and emits ``order.created`` event  
-3. warehouseService checks if the order is in stock and reserves the items and finally emits ``order.items.reserved`` event or ``order.items.notinstock`` event
-4. paymentService takes money from the customer and emits ``order.payment.completed`` event
-5. warehouseService ships the order and emits ``order.shipped`` event  
+1. sales-app-sim emits an ``order.placed`` event
+2. orderService creates an order and emits an ``order.created`` event  
+3. warehouseService checks if the order is in stock and reserves the items and finally emits an ``order.items.reserved`` event or an ``order.items.notinstock`` event
+4. paymentService takes money from the customer and emits an ``order.payment.completed`` event
+5. warehouseService ships the order and emits an ``order.shipped`` event  
 6. orderService completes the order and emits an ``order.completed`` event
 
 (notification service communicates the order status to the customer for several steps(events) in this flow)
