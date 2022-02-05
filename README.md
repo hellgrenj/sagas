@@ -12,11 +12,12 @@ Deno
 Go   
 
 ## Run
-``skaffold run``  
-
-and when everything is up and running start an order flow 
-with: ```deno run -A sales-app-sim.ts``` while monitoring with ```deno run -A monitoring-sim.ts```   
-(also check the logs for the notification service ``kubectl logs <podname> -f``)  
+1. ``skaffold run`` and wait for the system to spin up  
+...and when everything is up and running:
+2. open browser at http://localhost (dashboard)  
+![dashboard](./dasboard.jpg)
+3.  simulate an order flow 
+every 10 seconds with: ```deno run -A sales-app-sim.ts```   
 
 
 
@@ -28,7 +29,7 @@ with: ```deno run -A sales-app-sim.ts``` while monitoring with ```deno run -A mo
           sales-app-sim 
                 |
                 |
-              rabbit----------- monitoring-sim
+              rabbit----------- monitoring------dashboard
                 |
                 |
                 |
@@ -38,11 +39,9 @@ with: ```deno run -A sales-app-sim.ts``` while monitoring with ```deno run -A mo
 service   service    service    service 
 
 ```
-The Order service is built with .NET 6 and Postgres (db migrations with Roundhouse)  
-The Warehouse service is built with .NET 6 and Postgres (db migrations with Roundhouse)  
-The Payment service is built with Go and MongoDB  
-The Notification service is built with Go  
-sales-app-sim and monitoring-sim are Deno scripts. 
+The service are built in .NET 6 and Go and the sales-app-sim is a simple Deno script. 
+
+**There is a built-in delay for every step in the order flow. This is only for demo purposes (makes it easier to follow the flow in the dashboard)**
 
 The RabbitMQ management UI is exposed on localhost:15672 (guest/guest)  
 
