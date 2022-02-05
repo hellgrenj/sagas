@@ -3,4 +3,4 @@ kind: ConfigMap
 metadata:
   name: config
 data:
-  delay_ms: "1000"
+  delay_ms: "800"
