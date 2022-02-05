@@ -22,7 +22,6 @@ public class CancelOrderCommandHandler : IRequestHandler<CancelOrderCommand, Uni
     private readonly ILogger<PlaceOrderHandler> _logger;
     private readonly CancelOrderCommandValidator _validator;
     private readonly IRepository<Order> _orderRepository;
-
     private readonly IMediator _mediator;
     public CancelOrderCommandHandler(ILogger<PlaceOrderHandler> logger, CancelOrderCommandValidator validator, IRepository<Order> orderRepository, IMediator mediator)
     {

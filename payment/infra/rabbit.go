@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -183,6 +184,20 @@ func (r *rabbit) publishMessage(paymentEvent outbound.PaymentEvent) {
 		r.logger.Error(err.Error())
 		return
 	}
+
+	// for demo purposes
+	delay := os.Getenv("SIMULATED_DELAY")
+	if delay != "" {
+		ms, err := strconv.Atoi(delay)
+		if err != nil {
+			return
+		}
+		if ms > 0 {
+			log.Printf("SIMULATED_DELAY set, Delaying %v ms", ms)
+			time.Sleep(time.Duration(ms) * time.Millisecond)
+		}
+	}
+
 	err = ch.Publish(
 		"order.topics",            // exchange
 		"order.payment.completed", // routing key

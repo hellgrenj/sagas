@@ -18,6 +18,12 @@ spec:
       containers:
       - image: payment
         name: payment
+        env:
+        - name: SIMULATED_DELAY 
+          valueFrom:
+            configMapKeyRef:
+              name: config        
+              key: delay_ms
         resources: {}
       restartPolicy: Always
 status: {}

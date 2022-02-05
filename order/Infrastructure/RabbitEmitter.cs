@@ -44,7 +44,18 @@ public class RabbitEmitter : IRabbitEmitter
             new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }))),
             _ => throw new Exception("unknown event")
         };
-
+        
+        // For demo purposes
+        if (Environment.GetEnvironmentVariable("SIMULATED_DELAY") != null)
+        {
+            var delay = int.Parse(Environment.GetEnvironmentVariable("SIMULATED_DELAY"));
+            if (delay > 0)
+            {
+                _logger.LogInformation($"SIMULATED_DELAY is set, delaying message {delay} milliseconds");
+                System.Threading.Thread.Sleep(delay);
+            }
+        }
+        
         channel.BasicPublish(exchange,
                                 routingKey,
                                 basicProperties: null,
