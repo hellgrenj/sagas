@@ -15,6 +15,7 @@ public class Order
         Price = order.Price;
         Quantity = order.Quantity;
         CorrelationId = correlationId;
+        ChangeState(OrderStates.Pending);
     }
     public void ChangeState(string newState)
     {

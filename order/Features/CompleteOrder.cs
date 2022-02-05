@@ -1,5 +1,3 @@
-using System.Data;
-using Dapper;
 using FluentValidation;
 using MediatR;
 using model.Repositories;

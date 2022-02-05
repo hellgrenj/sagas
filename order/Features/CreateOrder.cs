@@ -1,5 +1,3 @@
-using System.Data;
-using Dapper;
 using FluentValidation;
 using MediatR;
 using model.Repositories;
@@ -43,7 +41,6 @@ public class PlaceOrderHandler : IRequestHandler<CreateOrderCommand, Unit>
         if (validationResult.IsValid)
         {
             var order = new Order(cmd.orderPlacedEvent.Order, cmd.orderPlacedEvent.CorrelationId);
-            order.ChangeState(OrderStates.Pending);
             order.Id = await _orderRepository.SaveAsync(order);
             _logger.LogInformation($"Order created with id {order.Id.Value}");
             await _mediator.Publish(new OrderCreatedEvent { CorrelationId = cmd.orderPlacedEvent.CorrelationId, Order = order });

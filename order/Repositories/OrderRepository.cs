@@ -18,7 +18,7 @@ public class OrderRepository : IRepository<Order>
         return await _connection.QueryFirstAsync<Order>("SELECT * FROM ordertable WHERE id = @id", new { id = id });
     }
 
-    // TODO update audit table (use JSON support in postgres for this!)
+    // TODO audit table (Postgres jsonb)
     public async Task<int> SaveAsync(Order order)
     {
         if (order.Id.HasValue)
