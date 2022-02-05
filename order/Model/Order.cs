@@ -11,7 +11,6 @@ public class Order
     public Order() { }
     public Order(DTOs.Order order, string correlationId)
     {
-        Id = order.Id.HasValue ? order.Id.Value : null;
         Item = order.Item;
         Price = order.Price;
         Quantity = order.Quantity;
