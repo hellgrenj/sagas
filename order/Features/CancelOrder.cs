@@ -2,6 +2,7 @@ using System.Data;
 using Dapper;
 using FluentValidation;
 using MediatR;
+using model.Repositories;
 using order.Events.Inbound;
 using order.Events.Outbound;
 using order.Model;
@@ -22,28 +23,24 @@ public class CancelOrderCommandHandler : IRequestHandler<CancelOrderCommand, Uni
 {
     private readonly ILogger<PlaceOrderHandler> _logger;
     private readonly CancelOrderCommandValidator _validator;
-    private readonly IDbConnection _connection;
+    private readonly IRepository<Order> _orderRepository;
 
     private readonly IMediator _mediator;
-    public CancelOrderCommandHandler(ILogger<PlaceOrderHandler> logger, CancelOrderCommandValidator validator, IDbConnection connection, IMediator mediator)
+    public CancelOrderCommandHandler(ILogger<PlaceOrderHandler> logger, CancelOrderCommandValidator validator, IRepository<Order> orderRepository, IMediator mediator)
     {
         _logger = logger;
         _validator = validator;
-        _connection = connection;
+        _orderRepository = orderRepository;
         _mediator = mediator;
     }
-    // TODO should have an audit table where we store all related information for each event (order state change..)
-    // could use Postgres json support for this..
     public async Task<Unit> Handle(CancelOrderCommand cmd, CancellationToken cancellationToken)
     {
         var validationResult = _validator.Validate(cmd);
         if (validationResult.IsValid)
         {
-            var order = cmd.itemsNotInStockEvent.Order;
-            order.State = OrderStates.Cancelled;
-            var sql = "UPDATE ordertable SET state=@state WHERE id=@id;";
-            await _connection.ExecuteScalarAsync(sql,
-            new { state = order.State, id = order.Id });
+            var order = await _orderRepository.GetAsync(cmd.itemsNotInStockEvent.Order.Id.Value);
+            order.ChangeState(OrderStates.Cancelled);
+            await _orderRepository.SaveAsync(order);
             _logger.LogInformation($"Cancelled Order with id {order.Id}");
             await _mediator.Publish(new OrderCancelledEvent { CorrelationId = cmd.itemsNotInStockEvent.CorrelationId, 
             Reason = "Items not in stock", Order = order });

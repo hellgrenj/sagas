@@ -1,8 +1,11 @@
 using System.Data;
 using FluentValidation;
 using MediatR;
+using model.Repositories;
 using Npgsql;
 using order.Infrastructure;
+using order.Model;
+using order.Repositories;
 
 var connectionString = Environment.GetEnvironmentVariable("POSTGRES_CONNECTION_STRING");
 if (string.IsNullOrEmpty(connectionString))
@@ -15,6 +18,7 @@ IHost host = Host.CreateDefaultBuilder(args)
         services.AddHostedService<RabbitListener>();
         services.AddMediatR(typeof(Program));
         services.AddTransient<IDbConnection>((sp) => new NpgsqlConnection(connectionString));
+        services.AddTransient<IRepository<Order>, OrderRepository>();
         services.AddValidatorsFromAssemblyContaining<Program>();
         services.AddSingleton<IRabbitEmitter, RabbitEmitter>();
         services.AddSingleton<IRabbitConnectionHandler, RabbitConnectionHandler>();

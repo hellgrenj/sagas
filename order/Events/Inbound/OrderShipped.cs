@@ -1,4 +1,4 @@
-using order.Model;
+using order.DTOs;
 
 namespace order.Events.Inbound;
 
