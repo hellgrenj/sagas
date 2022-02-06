@@ -8,12 +8,12 @@ public class Order
     public string State { get; private set; }
 
     public string CorrelationId { get; set; }
-    public Order() { }
-    public Order(DTOs.Order order, string correlationId)
+    public Order() { } 
+    public Order(string item, int price, int quantity, string correlationId)
     {
-        Item = order.Item;
-        Price = order.Price;
-        Quantity = order.Quantity;
+        Item = item;
+        Price = price;
+        Quantity = quantity;
         CorrelationId = correlationId;
         ChangeState(OrderStates.Pending);
     }

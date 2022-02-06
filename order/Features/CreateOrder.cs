@@ -40,7 +40,8 @@ public class PlaceOrderHandler : IRequestHandler<CreateOrderCommand, Unit>
         var validationResult = _validator.Validate(cmd); 
         if (validationResult.IsValid)
         {
-            var order = new Order(cmd.orderPlacedEvent.Order, cmd.orderPlacedEvent.CorrelationId);
+            var evOrder = cmd.orderPlacedEvent.Order;
+            var order = new Order(evOrder.Item, evOrder.Price, evOrder.Quantity, cmd.orderPlacedEvent.CorrelationId);
             order.Id = await _orderRepository.SaveAsync(order);
             _logger.LogInformation($"Order created with id {order.Id.Value}");
             await _mediator.Publish(new OrderCreatedEvent { CorrelationId = cmd.orderPlacedEvent.CorrelationId, Order = order });

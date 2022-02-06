@@ -15,7 +15,7 @@ Go
 1. ``skaffold run`` and wait for the system to spin up  
 ...and when everything is up and running:
 2. open browser at http://localhost (dashboard)  
-![dashboard](./dasboard.jpg)
+![dashboard](./dashboard.jpg)
 3.  simulate an order flow 
 every 10 seconds with: ```deno run -A sales-app-sim.ts```   
 
