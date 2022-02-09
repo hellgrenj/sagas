@@ -39,7 +39,7 @@ every 10 seconds with: ```deno run -A sales-app-sim.ts```
 service   service    service    service 
 
 ```
-The service are built in .NET 6 with Postgres and Go with MongoDB and the sales-app-sim is a simple Deno script. 
+The services are built in .NET 6 with Postgres and Go with MongoDB and the sales-app-sim is a simple Deno script. 
 
 **There is a built-in delay for every step in the order flow. This is only for demo purposes (makes it easier to follow the flow in the dashboard)**
 
