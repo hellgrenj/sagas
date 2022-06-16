@@ -10,8 +10,12 @@ import (
 )
 
 func StartListen(eventChan chan models.Event) {
-	go publishEventsToWsConnections(eventChan)
-	http.HandleFunc("/ws", connect)
+	hub := newHub()
+	go hub.run()
+	go publishEventsToWsConnections(eventChan, hub)
+	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+		connect(w, r, hub)
+	})
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
@@ -28,9 +32,7 @@ const (
 	pingPeriod = (pongWait * 9) / 10
 )
 
-var connections = map[*websocket.Conn]bool{}
-
-func connect(w http.ResponseWriter, r *http.Request) {
+func connect(w http.ResponseWriter, r *http.Request, hub *Hub) {
 	c, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Print("upgrade:", err)
@@ -39,7 +41,6 @@ func connect(w http.ResponseWriter, r *http.Request) {
 	c.SetReadLimit(512)
 	c.SetReadDeadline(time.Now().Add(pongWait))
 	c.SetPongHandler(func(string) error { c.SetReadDeadline(time.Now().Add(pongWait)); return nil })
-	connections[c] = true
 	go func() { // write pings to client..
 		pingTicker := time.NewTicker(pingPeriod)
 		for range pingTicker.C {
@@ -55,24 +56,16 @@ func connect(w http.ResponseWriter, r *http.Request) {
 			_, _, err := c.ReadMessage()
 			if err != nil {
 				log.Printf("removing connection %v. Pong failed with error %v", c.RemoteAddr(), err)
-				delete(connections, c)
-				c.Close()
+				hub.unregister <- c
 				break
 			}
 		}
 	}()
-
+	hub.register <- c
 }
-func publishEventsToWsConnections(eventChan chan models.Event) {
+func publishEventsToWsConnections(eventChan chan models.Event, hub *Hub) {
 	for {
 		event := <-eventChan
-		log.Printf("Publishing event: %s with correlationId %v and messageId %v", event.Name, event.CorrelationId, event.MessageId)
-		for c := range connections {
-			log.Printf("Sending event to connection %v", c.RemoteAddr())
-			err := c.WriteJSON(event)
-			if err != nil {
-				log.Printf("Error writing message to websocket: %v", err)
-			}
-		}
+		hub.events <- event
 	}
 }
