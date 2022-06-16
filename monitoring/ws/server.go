@@ -44,18 +44,17 @@ func connect(w http.ResponseWriter, r *http.Request, hub *Hub) {
 	go func() { // write pings to client..
 		pingTicker := time.NewTicker(pingPeriod)
 		for range pingTicker.C {
-			log.Println("pinging client..")
 			c.SetWriteDeadline(time.Now().Add(30 * time.Second))
 			if err := c.WriteMessage(websocket.PingMessage, []byte{}); err != nil {
 				return
 			}
 		}
 	}()
-	go func() { // read pongs from client
+	go func() { // read from client
 		for {
 			_, _, err := c.ReadMessage()
 			if err != nil {
-				log.Printf("removing connection %v. Pong failed with error %v", c.RemoteAddr(), err)
+				log.Printf("removing connection %v. received %v", c.RemoteAddr(), err)
 				hub.unregister <- c
 				break
 			}
